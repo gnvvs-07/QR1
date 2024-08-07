@@ -1,6 +1,8 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+// routing
+import authRoutes from "./api/routes/auth.route.js";
 // create a express app
 const app = express();
 dotenv.config();
@@ -9,6 +11,13 @@ mongoose
   .connect(process.env.MONGO)
   .then(() => console.log("db connected"))
   .catch((error) => console.log("error in connecting db"));
+
+// middle wares and express access to json files
+app.use(express.json())
+// routing
+// authentication routing
+app.use("/api/auth",authRoutes);
+
 // port
 const PORT = 3000;
 app.listen(3000, () => {
