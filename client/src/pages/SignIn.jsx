@@ -2,14 +2,22 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
+// reducers
+import { useDispatch, useSelector } from "react-redux";
+import {
+  signInFailure,
+  signInStart,
+  signInSuccess,
+} from "../redux/user/userSlice";
 export default function SignIn() {
   // navigation
   const navigation = useNavigate();
   // handling the formData,errors,loading
   const [formData, setFormData] = useState({});
-  const [loading, setLoading] = useState(null);
-  const [error, setError] = useState(null);
-
+  // using selctor for error and loading w.r.t user
+  const { loading, error: errorMessage } = useSelector((state) => state.user);
+  // dispatch the states
+  const dispatch = useDispatch();
   // handling changes in formData
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,13 +28,12 @@ export default function SignIn() {
     e.preventDefault();
     // if the data filled is empty
     if (!formData.email || !formData.password) {
-      return setError("Please fill all the fields");
+      dispatch(signInFailure("All Fields are required"));
     }
     // API calling and submitting
     try {
       // API for creating account
-      setLoading(true);
-      setError(null);
+      dispatch(signInStart());
       // res
       const res = await fetch("/api/auth/signin", {
         method: "POST",
@@ -37,14 +44,20 @@ export default function SignIn() {
       });
       //   convert the response to data
       const data = await res.json();
+      // login fail
+      if (data.success === false) {
+        dispatch(signInFailure(data.message));
+      }
       //   if the response is ok
       if (res.ok) {
+        // login success
+        dispatch(signInSuccess(data));
         //   redirect to login page
         navigation("/qr");
       }
     } catch (error) {
-      setError("Error while creating account please try agina later....");
-      setLoading(true);
+      // failure
+      dispatch(signInFailure(error.message));
     }
   };
   return (
