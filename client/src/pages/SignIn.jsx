@@ -9,6 +9,8 @@ import {
   signInStart,
   signInSuccess,
 } from "../redux/user/userSlice";
+import OAuth from "../components/OAuth";
+import XAuth from "../components/XAuth";
 export default function SignIn() {
   // navigation
   const navigation = useNavigate();
@@ -93,6 +95,21 @@ export default function SignIn() {
         >
           {loading ? <PacmanLoader /> : "Sign In"}
         </button>
+        <div className="flex flex-col items-center mt-5">
+          <div className="flex items-center w-full my-5">
+            <hr className="flex-grow border-t border-black" />
+            <p className="text-center text-sm font-semibold px-2">or</p>
+            <hr className="flex-grow border-t border-black" />
+          </div>
+          <div className="flex items-center justify-center gap-5">
+            <button>
+              <OAuth />
+            </button>
+            <button>
+              <XAuth />
+            </button>
+          </div>
+        </div>
       </form>
       <div className="mt-6 text-center">
         <p>
