@@ -3,6 +3,7 @@ import { BsMoonStarsFill } from "react-icons/bs";
 import { FaSun } from "react-icons/fa6";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleTheme } from "../redux/theme/themeSlice.js";
+import { IoBulb } from "react-icons/io5";
 
 export default function Header() {
   const dispatch = useDispatch();
@@ -29,12 +30,12 @@ export default function Header() {
       <div className="flex flex-row-reverse items-center gap-3">
         <button
           onClick={() => dispatch(toggleTheme())}
-          className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300"
+          className="p-2 rounded-full hover:border"
         >
           {theme === "dark" ? (
-            <FaSun size={20} className="text-yellow-400" />
+            <IoBulb size={20} className="text-slate-200 cursor-pointer" />
           ) : (
-            <BsMoonStarsFill size={20} className="text-blue-500" />
+            <BsMoonStarsFill size={20} className="text-blue-500 cursor-pointer" />
           )}
         </button>
         {currentUser ? (

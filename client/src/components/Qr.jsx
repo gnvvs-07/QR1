@@ -1,38 +1,59 @@
 import QRCode from "react-qr-code";
 import React, { useState } from "react";
 import { MdOutlineQrCodeScanner } from "react-icons/md";
+import { PiShareFat } from "react-icons/pi";
+
 export default function QR({ value, imageSrc }) {
   const qrCodeRef = React.useRef(null);
   const [showQr, setShowQr] = useState(false);
+
   const toggleShow = async () => {
     setShowQr(!showQr);
   };
 
-  React.useEffect(() => {
-    if (qrCodeRef.current) {
-      const canvas = qrCodeRef.current.querySelector("canvas");
-      if (canvas) {
-        const context = canvas.getContext("2d");
-        const image = new Image();
-        image.src = imageSrc;
-        image.onload = () => {
-          const size = canvas.width;
-          const imgSize = size / 5; // Adjust size of the center image
-          const x = (size - imgSize) / 2;
-          const y = (size - imgSize) / 2;
-          context.drawImage(image, x, y, imgSize, imgSize);
-        };
-      }
-    }
-  }, [imageSrc, value]);
+  const downloadQR = () => {
+    const svg = qrCodeRef.current.querySelector("svg");
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const img = new Image();
+    const svgBlob = new Blob([svgData], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      context.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+
+      const pngUrl = canvas
+        .toDataURL("image/png")
+        .replace("image/png", "image/octet-stream");
+
+      const downloadLink = document.createElement("a");
+      downloadLink.href = pngUrl;
+      downloadLink.download = "yourQR.png";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    };
+
+    img.src = url;
+  };
 
   return (
     <div className="">
       <div onClick={toggleShow} className="cursor-pointer">
         {showQr ? (
-          <div className="flex gap-2 font-semibold items-center justify-center">
+          <div className="flex font-semibold items-center justify-center">
             <p className="text-red-500">Hide Qr</p>
             <MdOutlineQrCodeScanner className="text-red-500 w-10 h-10 object-cover" />
+            {/* <PiShareFat
+              onClick={downloadQR}
+              className="w-10 h-10 ml-2 text-green-600 cursor-pointer hover:bg-green-600 hover:text-white rounded-full p-2"
+            /> */}
           </div>
         ) : (
           <div className="flex gap-2 font-semibold items-center justify-center">
@@ -47,14 +68,17 @@ export default function QR({ value, imageSrc }) {
           showQr ? "" : "hidden"
         }`}
       >
-        <QRCode
-          value={value}
-          size={256}
-          bgColor="#f7f7f7"
-          fgColor="#1a202c"
-          level="Q"
-          ref={qrCodeRef}
-        />
+        <div ref={qrCodeRef}>
+          <QRCode
+            id="qr"
+            value={value}
+            size={256}
+            bgColor="#f7f7f7"
+            fgColor="#1a202c"
+            level="Q"
+          />
+        </div>
+
         {imageSrc && (
           <img
             src={imageSrc}
@@ -63,6 +87,9 @@ export default function QR({ value, imageSrc }) {
           />
         )}
       </div>
+      <a onClick={downloadQR} className="cursor-pointer text-teal-600">
+        Download QR
+      </a>
     </div>
   );
 }
