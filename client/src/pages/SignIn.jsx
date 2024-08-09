@@ -55,7 +55,7 @@ export default function SignIn() {
         // login success
         dispatch(signInSuccess(data));
         //   redirect to login page
-        navigation("/qr");
+        navigation("/");
       }
     } catch (error) {
       // failure

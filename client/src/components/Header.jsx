@@ -11,7 +11,7 @@ export default function Header() {
 
   return (
     <header
-      className={`flex justify-between items-center p-4 mt-4 border-b-2 border-b-slate-600 ${
+      className={`flex justify-between items-center p-4 border-b-2 border-b-slate-600 ${
         theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       } transition-all duration-300`}
     >
@@ -42,7 +42,7 @@ export default function Header() {
             <span className="text-sm font-medium">
               Hello, {currentUser.username}
             </span>
-            <Link to="/qr">
+            <Link to={`/qr/${currentUser.username}`}>
               <img
                 src={currentUser.profilePic}
                 alt="User Avatar"
