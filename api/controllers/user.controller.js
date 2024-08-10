@@ -22,14 +22,13 @@ export const getUser = async (req, res) => {
 };
 
 export const updateUser = async (req, res, next) => {
-  // console.log(req.user);
   if (req.user.id !== req.params.userId) {
     return next(errorHandler(403, "You are not allowed to update the user"));
   }
-  // bcrypt the password
-  if (req.body.password){
+  // bcrypt the password if it exists in the request body
+  if (req.body.password) {
     req.body.password = bcryptjs.hashSync(req.body.password, 10);
-  } 
+  }
   try {
     const updatedUser = await User.findByIdAndUpdate(
       req.params.userId,
@@ -41,9 +40,7 @@ export const updateUser = async (req, res, next) => {
           password: req.body.password,
         },
       },
-      {
-        new: true,
-      }
+      { new: true }
     );
     const { password, ...rest } = updatedUser._doc;
     res.status(200).json(rest);
@@ -51,3 +48,4 @@ export const updateUser = async (req, res, next) => {
     next(error);
   }
 };
+

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import {
@@ -9,22 +9,35 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+import { useNavigate } from "react-router-dom";
+import { updateUserStart, updateUserSuccess, updateUserFailure } from "../redux/user/userSlice";
 
 export default function DashProfile() {
   const [imageFile, setImageFile] = useState(null);
   const [imageFileUrl, setImageFileUrl] = useState(null);
   const [imageFileUploadProgress, setImageFileUploadProgress] = useState(0);
   const [imageFileUploadError, setImageFileUploadError] = useState(null);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const filePickerRef = useRef();
-
   const { currentUser } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (imageFile) {
       uploadImage();
     }
   }, [imageFile]);
+
+  useEffect(() => {
+    if (currentUser) {
+      setUsername(currentUser.username);
+      setEmail(currentUser.email);
+    }
+  }, [currentUser]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -52,9 +65,7 @@ export default function DashProfile() {
         setImageFileUploadProgress(progress);
       },
       (error) => {
-        setImageFileUploadError(
-          "Could not upload image (File must be less than 2MB)"
-        );
+        setImageFileUploadError("Could not upload image (File must be less than 2MB)");
         setImageFile(null);
         setImageFileUrl(null);
       },
@@ -70,12 +81,37 @@ export default function DashProfile() {
     );
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logic for updating the profile, including updating Firebase with new data
-    // and potentially making an API request to update the user information in the database
-    // Replace this comment with your logic
-    console.log("Profile updated");
+    dispatch(updateUserStart());
+    try {
+      const updatedData = {
+        username,
+        email,
+        profilePic: imageFileUrl || currentUser.profilePic,
+        password: password ? password : undefined,
+      };
+
+      const response = await fetch(`/api/users/update/${currentUser._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentUser.token}`, // Assuming JWT is stored in currentUser.token
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile");
+      }
+
+      const updatedUser = await response.json();
+      dispatch(updateUserSuccess(updatedUser));
+      navigate(`/profile/${updatedUser.username}`);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      dispatch(updateUserFailure(error.message));
+    }
   };
 
   return (
@@ -128,18 +164,22 @@ export default function DashProfile() {
         <input
           type="text"
           placeholder="Username"
-          defaultValue={currentUser.username}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           className="p-2 border rounded-md"
         />
         <input
           type="email"
           placeholder="Email"
-          defaultValue={currentUser.email}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="p-2 border rounded-md"
         />
         <input
           type="password"
           placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           className="p-2 border rounded-md"
         />
         <button
