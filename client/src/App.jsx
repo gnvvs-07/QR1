@@ -4,6 +4,7 @@ import Qr from "./pages/Qr";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Header from "./components/Header";
+import DashProfile from "./pages/DashProfile";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/qr/:username" element={<Qr />} />
+        <Route path="/profile/:username" element={<DashProfile/>}/>
       </Routes>
     </BrowserRouter>
   );

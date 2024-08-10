@@ -41,7 +41,10 @@ export default function Header() {
         {currentUser ? (
           <div className="flex items-center space-x-4">
             <span className="text-sm font-medium">
-              Hello, {currentUser.username}
+              Hello, 
+              <Link to={`/profile/${currentUser.username}`}>
+              {currentUser.username}
+              </Link>
             </span>
             <Link to={`/qr/${currentUser.username}`}>
               <img
