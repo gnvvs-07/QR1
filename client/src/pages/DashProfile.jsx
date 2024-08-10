@@ -10,7 +10,14 @@ import {
 } from "firebase/storage";
 import { app } from "../firebase";
 import { useNavigate } from "react-router-dom";
-import { updateUserStart, updateUserSuccess, updateUserFailure } from "../redux/user/userSlice";
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+  deleteUserFailure,
+} from "../redux/user/userSlice";
 
 export default function DashProfile() {
   const [imageFile, setImageFile] = useState(null);
@@ -65,7 +72,9 @@ export default function DashProfile() {
         setImageFileUploadProgress(progress);
       },
       (error) => {
-        setImageFileUploadError("Could not upload image (File must be less than 2MB)");
+        setImageFileUploadError(
+          "Could not upload image (File must be less than 2MB)"
+        );
         setImageFile(null);
         setImageFileUrl(null);
       },
@@ -79,6 +88,23 @@ export default function DashProfile() {
           });
       }
     );
+  };
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/users/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        dispatch(deleteUserFailure(data.message));
+      } else {
+        dispatch(deleteUserSuccess(data));
+        navigate("/sign-up")
+      }
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -190,7 +216,7 @@ export default function DashProfile() {
         </button>
       </form>
       <div className="text-red-500 flex justify-between mt-7">
-        <span className="cursor-pointer hover:underline">Delete Account</span>
+        <span className="cursor-pointer hover:underline" onClick={handleDeleteUser}>Delete Account</span>
         <span className="cursor-pointer hover:underline">Sign Out</span>
       </div>
     </div>
