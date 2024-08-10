@@ -38,7 +38,6 @@ export const updateUser = async (req, res, next) => {
           email: req.body.email,
           profilePic: req.body.profilePic,
           password: req.body.password,
-          backgroundPic:req.body.backgroundPic,
         },
       },
       { new: true }
@@ -49,4 +48,3 @@ export const updateUser = async (req, res, next) => {
     next(error);
   }
 };
-
