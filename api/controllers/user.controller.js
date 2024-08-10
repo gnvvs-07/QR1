@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
-
+import { errorHandler } from "../utils/error.js";
+import bcryptjs from "bcryptjs";
 export const getUser = async (req, res) => {
   try {
     const username = req.params.username;
@@ -17,5 +18,36 @@ export const getUser = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const updateUser = async (req, res, next) => {
+  // console.log(req.user);
+  if (req.user.id !== req.params.userId) {
+    return next(errorHandler(403, "You are not allowed to update the user"));
+  }
+  // bcrypt the password
+  if (req.body.password){
+    req.body.password = bcryptjs.hashSync(req.body.password, 10);
+  } 
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.userId,
+      {
+        $set: {
+          username: req.body.username,
+          email: req.body.email,
+          profilePic: req.body.profilePic,
+          password: req.body.password,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+    const { password, ...rest } = updatedUser._doc;
+    res.status(200).json(rest);
+  } catch (error) {
+    next(error);
   }
 };
