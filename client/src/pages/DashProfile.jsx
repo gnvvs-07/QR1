@@ -10,18 +10,27 @@ import {
 } from "firebase/storage";
 import { app } from "../firebase";
 import { useNavigate } from "react-router-dom";
-import { updateUserStart, updateUserSuccess, updateUserFailure } from "../redux/user/userSlice";
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+} from "../redux/user/userSlice";
 
 export default function DashProfile() {
   const [imageFile, setImageFile] = useState(null);
   const [imageFileUrl, setImageFileUrl] = useState(null);
   const [imageFileUploadProgress, setImageFileUploadProgress] = useState(0);
   const [imageFileUploadError, setImageFileUploadError] = useState(null);
+  const [imageFileBg, setImageFileBg] = useState(null);
+  const [imageFileUrlBg, setImageFileUrlBg] = useState(null);
+  const [imageFileUploadProgressBg, setImageFileUploadProgressBg] = useState(0);
+  const [imageFileUploadErrorBg, setImageFileUploadErrorBg] = useState(null);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const filePickerRef = useRef();
+  const filePickerRefBg = useRef();
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -31,6 +40,12 @@ export default function DashProfile() {
       uploadImage();
     }
   }, [imageFile]);
+
+  useEffect(() => {
+    if (imageFileBg) {
+      uploadImageBg();
+    }
+  }, [imageFileBg]);
 
   useEffect(() => {
     if (currentUser) {
@@ -47,12 +62,20 @@ export default function DashProfile() {
     }
   };
 
+  const handleImageChangeBg = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFileBg(file);
+      setImageFileUrlBg(URL.createObjectURL(file));
+    }
+  };
+
   const uploadImage = () => {
     setImageFileUploadError(null);
     setImageFileUploadProgress(0);
 
     const storage = getStorage(app);
-    const fileName = new Date().getTime() + imageFile.name;
+    const fileName = `profile-${Date.now()}-${imageFile.name}`;
     const storageRef = ref(storage, fileName);
     const uploadTask = uploadBytesResumable(storageRef, imageFile);
 
@@ -65,7 +88,9 @@ export default function DashProfile() {
         setImageFileUploadProgress(progress);
       },
       (error) => {
-        setImageFileUploadError("Could not upload image (File must be less than 2MB)");
+        setImageFileUploadError(
+          "Could not upload image (File must be less than 2MB)"
+        );
         setImageFile(null);
         setImageFileUrl(null);
       },
@@ -74,8 +99,44 @@ export default function DashProfile() {
           .then((downloadURL) => {
             setImageFileUrl(downloadURL);
           })
-          .catch((error) => {
+          .catch(() => {
             setImageFileUploadError("Could not get image download URL");
+          });
+      }
+    );
+  };
+
+  const uploadImageBg = () => {
+    setImageFileUploadErrorBg(null);
+    setImageFileUploadProgressBg(0);
+
+    const storage = getStorage(app);
+    const fileName = `background-${Date.now()}-${imageFileBg.name}`;
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, imageFileBg);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress = Math.round(
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        );
+        setImageFileUploadProgressBg(progress);
+      },
+      (error) => {
+        setImageFileUploadErrorBg(
+          "Could not upload image (File must be less than 2MB)"
+        );
+        setImageFileBg(null);
+        setImageFileUrlBg(null);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref)
+          .then((downloadURL) => {
+            setImageFileUrlBg(downloadURL);
+          })
+          .catch(() => {
+            setImageFileUploadErrorBg("Could not get image download URL");
           });
       }
     );
@@ -89,14 +150,15 @@ export default function DashProfile() {
         username,
         email,
         profilePic: imageFileUrl || currentUser.profilePic,
-        password: password ? password : undefined,
+        backgroundPic: imageFileUrlBg || currentUser.backgroundPic,
+        password: password || undefined,
       };
 
       const response = await fetch(`/api/users/update/${currentUser._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${currentUser.token}`, // Assuming JWT is stored in currentUser.token
+          Authorization: `Bearer ${currentUser.token}`,
         },
         body: JSON.stringify(updatedData),
       });
@@ -125,6 +187,13 @@ export default function DashProfile() {
           ref={filePickerRef}
           hidden
         />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChangeBg}
+          ref={filePickerRefBg}
+          hidden
+        />
         <div
           className="relative w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full"
           onClick={() => filePickerRef.current.click()}
@@ -150,16 +219,56 @@ export default function DashProfile() {
           )}
           <img
             src={imageFileUrl || currentUser.profilePic}
-            alt="User"
-            className={`rounded-full w-full h-full object-cover border-8 border-[#26235b62] ${
+            alt="Profile"
+            className={`rounded-full w-full h-full object-cover border-4 border-gray-200 ${
               imageFileUploadProgress &&
               imageFileUploadProgress < 100 &&
-              "opacity-35"
+              "opacity-70"
+            }`}
+          />
+        </div>
+        <div
+          className="relative w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full"
+          onClick={() => filePickerRefBg.current.click()}
+        >
+          {imageFileUploadProgressBg > 0 && (
+            <CircularProgressbar
+              value={imageFileUploadProgressBg}
+              text={`${imageFileUploadProgressBg}%`}
+              strokeWidth={5}
+              styles={{
+                root: {
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                },
+                path: {
+                  stroke: `rgba(50, 50, 50, ${
+                    imageFileUploadProgressBg / 100
+                  })`,
+                },
+              }}
+            />
+          )}
+          <img
+            src={imageFileUrlBg || currentUser.backgroundPic}
+            alt="Background"
+            className={`rounded-full w-full h-full object-cover border-4 border-gray-200 ${
+              imageFileUploadProgressBg &&
+              imageFileUploadProgressBg < 100 &&
+              "opacity-70"
             }`}
           />
         </div>
         {imageFileUploadError && (
           <div className="text-red-500 text-center">{imageFileUploadError}</div>
+        )}
+        {imageFileUploadErrorBg && (
+          <div className="text-red-500 text-center">
+            {imageFileUploadErrorBg}
+          </div>
         )}
         <input
           type="text"
@@ -184,15 +293,11 @@ export default function DashProfile() {
         />
         <button
           type="submit"
-          className="bg-purple-500 text-white p-2 rounded-md hover:bg-purple-700"
+          className="bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300"
         >
-          Update
+          Update Profile
         </button>
       </form>
-      <div className="text-red-500 flex justify-between mt-7">
-        <span className="cursor-pointer hover:underline">Delete Account</span>
-        <span className="cursor-pointer hover:underline">Sign Out</span>
-      </div>
     </div>
   );
 }
