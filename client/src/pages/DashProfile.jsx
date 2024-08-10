@@ -17,6 +17,7 @@ import {
   deleteUserStart,
   deleteUserSuccess,
   deleteUserFailure,
+  signoutSuccess,
 } from "../redux/user/userSlice";
 
 export default function DashProfile() {
@@ -89,6 +90,24 @@ export default function DashProfile() {
       }
     );
   };
+  const handleSignout = async () => {
+    try {
+      // sign out handler function
+      const res = await fetch("/api/users/signout", {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.log(data.message);
+      } else {
+        // redux here
+        dispatch(signoutSuccess());
+        navigate("/sign-in")
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const handleDeleteUser = async () => {
     try {
       dispatch(deleteUserStart());
@@ -100,7 +119,7 @@ export default function DashProfile() {
         dispatch(deleteUserFailure(data.message));
       } else {
         dispatch(deleteUserSuccess(data));
-        navigate("/sign-up")
+        navigate("/sign-up");
       }
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
@@ -216,8 +235,13 @@ export default function DashProfile() {
         </button>
       </form>
       <div className="text-red-500 flex justify-between mt-7">
-        <span className="cursor-pointer hover:underline" onClick={handleDeleteUser}>Delete Account</span>
-        <span className="cursor-pointer hover:underline">Sign Out</span>
+        <span
+          className="cursor-pointer hover:underline"
+          onClick={handleDeleteUser}
+        >
+          Delete Account
+        </span>
+        <span className="cursor-pointer hover:underline" onClick={handleSignout}>Sign Out</span>
       </div>
     </div>
   );
