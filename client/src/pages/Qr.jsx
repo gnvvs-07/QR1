@@ -9,6 +9,7 @@ export default function Qr() {
   const { username } = useParams();
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
+  const { theme } = useSelector((state) => state.theme);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -31,7 +32,9 @@ export default function Qr() {
   const isCurrentUser = currentUser && currentUser.username === username;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-gray-50 rounded-lg shadow-lg">
+    <div className={`max-w-3xl mx-auto p-6 ${
+        theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+      } transition-all duration-300`}>
       {error ? (
         <p className="text-red-500 text-center">{error}</p>
       ) : user ? (

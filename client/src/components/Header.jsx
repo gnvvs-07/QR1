@@ -19,9 +19,9 @@ export default function Header() {
       {/* Logo or Home Link */}
       <Link
         to="/"
-        className="text-2xl font-bold tracking-wide hover:opacity-90 transition-opacity duration-300"
+        className="text-2xl font-bold tracking-wide hover:opacity-90 transition-opacity duration-300 text-orange-500"
       >
-        Kuarr
+        Ecards
       </Link>
 
       {/* Theme Toggle Button */}
@@ -35,15 +35,21 @@ export default function Header() {
           {theme === "dark" ? (
             <IoBulb size={20} className="text-slate-200 cursor-pointer" />
           ) : (
-            <BsMoonStarsFill size={20} className="text-blue-500 cursor-pointer" />
+            <BsMoonStarsFill
+              size={20}
+              className="text-blue-500 cursor-pointer"
+            />
           )}
         </button>
         {currentUser ? (
           <div className="flex items-center space-x-4">
             <span className="text-sm font-medium">
-              Hello, 
-              <Link to={`/profile/${currentUser.username}`}>
-              {currentUser.username}
+              Hello,
+              <Link
+                to={`/profile/${currentUser.username}`}
+                className="text-lg text-orange-500"
+              >
+                {currentUser.username}
               </Link>
             </span>
             <Link to={`/qr/${currentUser.username}`}>

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import OAuth from "../components/OAuth";
-import XAuth from "../components/XAuth";
+// import XAuth from "../components/XAuth";
 export default function SignUp() {
   // navigation
   const navigation = useNavigate();
@@ -100,9 +100,9 @@ export default function SignUp() {
             <button>
               <OAuth />
             </button>
-            <button>
+            {/* <button>
               <XAuth />
-            </button>
+            </button> */}
           </div>
         </div>
       </form>

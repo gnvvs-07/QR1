@@ -10,7 +10,7 @@ import {
   signInSuccess,
 } from "../redux/user/userSlice";
 import OAuth from "../components/OAuth";
-import XAuth from "../components/XAuth";
+// import XAuth from "../components/XAuth";
 export default function SignIn() {
   // navigation
   const navigation = useNavigate();
@@ -105,9 +105,9 @@ export default function SignIn() {
             <button>
               <OAuth />
             </button>
-            <button>
+            {/* <button>
               <XAuth />
-            </button>
+            </button> */}
           </div>
         </div>
       </form>
